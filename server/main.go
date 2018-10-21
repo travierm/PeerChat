@@ -8,43 +8,8 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/rs/cors"
+	. "github.com/travierm/PeerChat/server/lib"
 )
-
-var signals = SignalServer{cache: make(map[string]interface{})}
-var answers = AnswerServer{cache: make(map[string][]interface{})}
-
-type DataPayload struct {
-	Hash string
-	Data interface{}
-}
-
-type SignalServer struct {
-	cache map[string]interface{}
-}
-
-type AnswerServer struct {
-	cache map[string][]interface{}
-}
-
-func (s SignalServer) store(hash string, signal interface{}) {
-	s.cache[hash] = signal
-}
-
-func (s SignalServer) getByHash(hash string) interface{} {
-	return s.cache[hash]
-}
-
-func (s AnswerServer) push(hash string, answer interface{}) {
-	if s.cache[hash] == nil {
-		s.cache[hash] = make([]interface{}, 0)
-	}
-
-	s.cache[hash] = append(s.cache[hash], answer)
-}
-
-func (s AnswerServer) getByHash(hash string) []interface{} {
-	return s.cache[hash]
-}
 
 func Index(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprint(w, "Welcome!\n")
@@ -54,7 +19,7 @@ func GetSignal(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 	hash := ps.ByName("hash")
 
-	data := signals.getByHash(hash)
+	data := signals.GetByHash(hash)
 
 	if data == nil {
 		http.Error(w, "Invalid hash given", 400)
@@ -82,7 +47,7 @@ func PostSignal(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	hash := payload.Hash
 	data := payload.Data
 
-	signals.store(hash, data)
+	signals.Store(hash, data)
 
 	fmt.Println("Signal stored for", hash)
 	fmt.Fprintf(w, "ok")
@@ -91,7 +56,7 @@ func PostSignal(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 func GetAnswer(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	hash := ps.ByName("hash")
 
-	data := answers.getByHash(hash)
+	data := answers.GetByHash(hash)
 
 	if data == nil {
 		http.Error(w, "Invalid hash given", 400)
@@ -118,7 +83,7 @@ func PostAnswer(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	hash := payload.Hash
 	data := payload.Data
 
-	answers.push(hash, data)
+	answers.Push(hash, data)
 
 	fmt.Println("Answer stored for", hash)
 	fmt.Fprintf(w, "ok")
@@ -128,8 +93,11 @@ func debugmsg(data interface{}) {
 	fmt.Printf("%+v\n", data)
 }
 
+//setup signal and answer servers
+var signals = SignalServer{Cache: make(map[string]interface{})}
+var answers = AnswerServer{Cache: make(map[string][]interface{})}
+
 func main() {
-	//setup signal and answer server
 
 	router := httprouter.New()
 	router.GET("/", Index)

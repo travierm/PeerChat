@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	"testing"
 	"time"
+
+	. "github.com/travierm/PeerChat/server/lib"
 )
 
 type testSignal struct {
@@ -20,11 +22,11 @@ func init() {
 }
 
 func TestSignalServer(t *testing.T) {
-	server := SignalServer{cache: make(map[string]interface{})}
-	server.store("ABCD", testSignal{Name: "room1"})
-	server.store("CHDD", testSignal{Name: "room2"})
+	server := SignalServer{Cache: make(map[string]interface{})}
+	server.Store("ABCD", testSignal{Name: "room1"})
+	server.Store("CHDD", testSignal{Name: "room2"})
 
-	result := server.getByHash("CHDD")
+	result := server.GetByHash("CHDD")
 
 	if result.(testSignal).Name != "room2" {
 		t.Errorf("Signal server has bad state")
@@ -32,12 +34,12 @@ func TestSignalServer(t *testing.T) {
 }
 
 func TestAnswerServer(t *testing.T) {
-	server := AnswerServer{cache: make(map[string][]interface{})}
-	server.push("ABCD", testAnswer{Name: "Mar"})
-	server.push("ABCD", testAnswer{Name: "Jan"})
-	server.push("DCBA", testAnswer{Name: "Oct"})
+	server := AnswerServer{Cache: make(map[string][]interface{})}
+	server.Push("ABCD", testAnswer{Name: "Mar"})
+	server.Push("ABCD", testAnswer{Name: "Jan"})
+	server.Push("DCBA", testAnswer{Name: "Oct"})
 
-	results := server.getByHash("ABCD")
+	results := server.GetByHash("ABCD")
 	signal := results[1]
 
 	if signal.(testAnswer).Name != "Jan" {
