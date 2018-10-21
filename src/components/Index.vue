@@ -8,7 +8,7 @@
       <p>Messages:</p>
 
       <pre id="outgoing">
-        <p v-for="msg in log">{{msg}}</p>
+        <p v-for="(msg, index) in log" :key="index">{{msg}}</p>
       </pre>
 
       <input v-model="inputMessage" />
@@ -101,13 +101,13 @@ function initPeer(self) {
     if(data.type == "offer") {
       self.startAnswerCheck();
       axios.post('http://localhost:3000/signal', {
-          id: self.inputHash,
-          signal: JSON.stringify(data)
+          hash: self.inputHash,
+          data: JSON.stringify(data)
       });
     }else{
       axios.post('http://localhost:3000/answer', {
-          id: self.inputHash,
-          signal: JSON.stringify(data)
+          hash: self.inputHash,
+          data: JSON.stringify(data)
       });
     }
   })
