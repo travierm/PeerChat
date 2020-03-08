@@ -1,4 +1,4 @@
-module github.com/travierm/PeerChat
+module github.com/travierm/PeerChat/server
 
 go 1.14
 
